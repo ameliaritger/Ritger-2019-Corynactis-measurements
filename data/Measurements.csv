@@ -1,4 +1,4 @@
-﻿Number,ID,Date,Oral disk diameter (mm)_a,Oral disk diameter (mm)_b,Tentacle number (small),Tentacle number (large),Mouth length (mm),Vial mass (g),Wet mass plus vial (g),Dry mass plus vial (g)_day 1,Dry mass plus vial (g)_day 12,Dry mass plus vial (g)_day 3,Dry mass plus vial (g)_day 4
+﻿Number,ID,Date,Oral disk diameter (mm)_a,Oral disk diameter (mm)_b,Tentacle number (small),Tentacle number (large),Mouth length (mm),Vial mass (g),Wet mass plus vial (g),Dry mass plus vial (g)_day 1,Dry mass plus vial (g)_day 2,Dry mass plus vial (g)_day 3,Dry mass plus vial (g)_day 4
 1,Reef red,9/30/2019,6.26,6.44,,,0.98,0.139,0.243,,0.149,0.148,0.149
 3,Reef red,9/30/2019,5.36,6.24,,,0.91,0.141,0.217,,0.148,0.148,0.148
 4,Reef red,9/30/2019,8.94,9.51,,,1.05,0.156,0.406,,0.179,0.179,0.18
@@ -23,3 +23,15 @@
 23,Reef red,10/17/2019,6.33,6.12,,,0.55,0.153,0.206,,,,
 28,Reef red,10/17/2019,7.24,8.19,,,0.65,0.104,0.14,,,,
 27,Reef red,10/17/2019,10.9,11.8,,,0.99,0.097,0.226,,,,
+29,GWP Red 1A,10/18/2019,8.36,7.52,,,1.37,0.198,0.33,,,,
+30,GWP Red 1A,10/18/2019,9.75,10.15,,,1.15,0.23,0.387,,,,
+31,GWP Red 1A,10/18/2019,6.92,6.97,,,0.82,0.224,0.329,,,,
+32,GWP Red 1A,10/18/2019,5.17,4.92,,,0.54,0.195,0.245,,,,
+33,Reef red,10/18/2019,6.17,6.82,,,0.63,0.181,0.291,,,,
+34,Reef red,10/18/2019,5.72,5.01,,,0.59,0.184,0.257,,,,
+35,,,,,,,,0.209,,,,,
+36,Reef red,10/18/2019,6.07,6.89,,,0.57,0.194,0.24,,,,
+37,Reef red,10/18/2019,6.73,6.98,,,0.81,0.195,0.264,,,,
+38,,,,,,,,0.21,,,,,
+39,,,,,,,,0.192,,,,,
+40,,,,,,,,0.175,,,,,

@@ -18,6 +18,7 @@ measure <- data %>%
   mutate(dry_mass_g = dry_mass_plus_vial_g_day_3-vial_mass_g) %>%
   select(id, oral_disk_mm, mouth_length_mm, wet_mass_g, dry_mass_g)
 
+plot(measure$oral_disk_mm~measure$mouth_length_mm)
 plot(measure$dry_mass_g~measure$oral_disk_mm)
 plot(measure$dry_mass_g~measure$mouth_length_mm)
-plot(measure$oral_disk_mm~measure$mouth_length_mm)
+plot(measure$wet_mass_g~measure$mouth_length_mm)
