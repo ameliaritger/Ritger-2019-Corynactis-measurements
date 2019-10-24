@@ -26,8 +26,6 @@ measure <- data %>%
   select(id, oral_disk_mm, mouth_length_mm,  vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g)
 
 
-
-plot(measure$oral_disk_mm~measure$mouth_length_mm)
-plot(measure$dry_mass_g~measure$oral_disk_mm)
-plot(measure$dry_mass_g~measure$mouth_length_mm)
-plot(measure$wet_mass_g~measure$mouth_length_mm)
+# Make plot of oral disk ~ mouth length, dry mass/wet mass ~ oral disk/mouth length
+ggplot(measure, aes(x=mouth_length_mm, y=wet_mass_g)) +
+  geom_point(aes(color=id))
