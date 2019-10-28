@@ -27,5 +27,8 @@ measure <- data %>%
 
 
 # Make plot of oral disk ~ mouth length, dry mass/wet mass ~ oral disk/mouth length
-ggplot(measure, aes(x=mouth_length_mm, y=wet_mass_g)) +
-  geom_point(aes(color=id))
+ggplot(measure, aes(x=oral_disk_mm, y=wet_mass_g)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="grey12", size=1, linetype="dashed") +
+  labs(x="Oral Disk Diameter (mm)", y="Wet mass (g)") +
+  theme_bw()
