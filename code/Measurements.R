@@ -23,13 +23,13 @@ measure <- data %>%
   mutate(wet_mass_g = wet_mass_plus_vial_g-vial_mass_g) %>%
   mutate(min_dry_mass_plus_vial_g = pmin(dry_mass_plus_vial_g_day_3,dry_mass_plus_vial_g_day_4,dry_mass_plus_vial_g_day_5)) %>%
   mutate(dry_mass_g = as.numeric(min_dry_mass_plus_vial_g)-vial_mass_g) %>%
-  select(id, oral_disk_mm, mouth_length_mm,  vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g)
-
+  mutate(basal_disk_mm = (basal_disk_diameter_mm_a + basal_disk_diameter_mm_b)/2) %>%
+  select(id, oral_disk_mm, basal_disk_mm, mouth_length_mm,  vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g)
 
 # Make plot of oral disk ~ mouth length, dry mass/wet mass ~ oral disk/mouth length
 ggplot(measure, aes(x=oral_disk_mm, y=wet_mass_g)) +
   geom_point() +
-  #geom_point(aes(color=id)) + # plot points colored by ID
+  geom_point(aes(color=id)) + # plot points colored by ID
   geom_smooth(method="lm", se=FALSE, color="grey12", size=1, linetype="dashed") +
   labs(x="Oral Disk Diameter (mm)", y="Wet mass (g)") +
   theme_bw()
