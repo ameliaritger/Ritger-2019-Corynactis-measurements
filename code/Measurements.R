@@ -30,9 +30,12 @@ measure <- data %>%
   select(id, oral_disk_mm, basal_disk_mm, mouth_length_mm, vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g)
 
 # Make plot of oral disk ~ mouth length, dry mass/wet mass ~ oral disk/mouth length
-ggplot(measure, aes(x=oral_disk_mm, y=dry_mass_g)) +
+ggplot(measure, aes(x=oral_disk_mm, y=wet_mass_g)) +
   geom_point() +
   geom_point(aes(color=id)) + # plot points colored by ID
   geom_smooth(method="lm", se=FALSE, color="grey12", size=1, linetype="dashed") +
   labs(x="Oral Disk Diameter (mm)", y="Dry mass (g)") +
   theme_bw()
+
+# Get regression line
+lm(measure$wet_mass_g~measure$oral_disk_mm)
