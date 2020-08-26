@@ -9,16 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(here)
 library(janitor)
 library(gtools)
 library(lubridate)
 library(ggpmisc) #use for adding regression line equation to ggplot
-
 ```
 
 ## Load data
 ```{r}
-data <- read_csv("data/Measurements.csv") %>% 
+data <- read_csv(here("data", "Measurements.csv")) %>% 
   clean_names()
 ```
 
@@ -41,14 +41,56 @@ measure <- data_no_na %>%
   mutate(wet_mass_g = wet_mass_plus_vial_g-vial_mass_g) %>%
   mutate(min_dry_mass_plus_vial_g = pmin(dry_mass_plus_vial_g_day_2, dry_mass_plus_vial_g_day_3,dry_mass_plus_vial_g_day_4,dry_mass_plus_vial_g_day_5, dry_mass_plus_vial_g_day_6, dry_mass_plus_vial_g_day_7)) %>%
   mutate(dry_mass_g = as.numeric(min_dry_mass_plus_vial_g)-vial_mass_g) %>%
-  select(number, id, oral_disk_mm, basal_disk_mm, mouth_length_mm, vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g) %>% 
+  select(number, date, id, oral_disk_mm, basal_disk_mm, mouth_length_mm, vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g) %>% 
   filter(is.na(dry_mass_g)==FALSE) %>% 
-  mutate(dry_mass_g=ifelse(dry_mass_g < 0, 0, dry_mass_g)) #make negative values (samples 85, 160) zero
+  mutate(dry_mass_g=ifelse(dry_mass_g <= 0, 0.00001, dry_mass_g)) #make negative or zero values (samples 85, 160) very small greater than zero values
 
 measure_dry <- measure %>% 
   filter(dry_mass_g>0) #remove zero values
 
 ```
+
+Univariate analysis
+```{r}
+#basal disk diameter
+hist(measure$basal_disk_mm)
+
+ggplot(measure, aes(sample=basal_disk_mm)) +
+  stat_qq() +
+  stat_qq_line()
+
+#dry mass
+hist(measure$dry_mass_g)
+
+ggplot(measure, aes(sample=dry_mass_g)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+Well those variables are quite skewed!
+
+### Transform those bad boys
+```{r}
+measure <- measure %>% 
+  mutate(basal_log = log10(basal_disk_mm),
+         dry_log = log10(dry_mass_g))
+
+#log(basal disk diameter)
+hist(measure$basal_log)
+
+ggplot(measure, aes(sample=basal_log)) +
+  stat_qq() +
+  stat_qq_line()
+
+#log(dry mass)
+hist(measure$dry_log)
+
+ggplot(measure, aes(sample=dry_log)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+That looks better!
 
 # Plot some stuff
 ```{r}
@@ -79,4 +121,72 @@ ggplot(measure, aes(x=basal_disk_mm, y=dry_mass_g)) +
                label.y = 0.8, label.x = 0.025,
                 parse = TRUE)
 ```
+
+## Plot log-transformed variables just for fun
+```{r}
+ggplot(measure, aes(x=basal_log, y=dry_log)) +
+  geom_point() +
+  #geom_point(aes(color=id)) + # plot points colored by ID
+  geom_smooth(method="lm", formula= (y ~ x), color="lightgreen", fill="lightgreen", linetype="dashed") +
+  labs(x="log(Oral Disk Diameter) (mm)", y="log(Wet mass) (g)") +
+  theme_bw() +
+  stat_poly_eq(formula = formula1, 
+                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               label.y = 0.95, label.x = 0.025,
+               parse = TRUE)
+```
+
+## Run the regression
+```{r}
+#first, remove missing values (samples where I didn't measure basal disk diameter)
+measure_na <- measure %>% 
+  filter(!is.na(basal_disk_mm))
+```
+
+log-log transformed data
+```{r}
+model1 <- lm(measure_na$dry_log ~ measure_na$basal_log)
+
+summary(model1)
+AIC(model1)
+```
+
+2nd degree polynomial
+```{r}
+model2 <- lm(measure_na$dry_mass_g ~ poly(measure_na$basal_disk_mm,2))
+
+summary(model2)
+AIC(model2)
+```
+
+3rd degree polynomial
+```{r}
+model3 <- lm(measure_na$dry_mass_g ~ poly(measure_na$basal_disk_mm,3))
+
+summary(model3)
+AIC(model3)
+```
+
+Hmm... it actually looks like I don't need third degree polynomial? BUT ALSO WHY IS AIC SO LARGE (negative doesn't matter) WHEN A POLYNOMIAL IS USED GAH I don't think AIC is a good indicator for model selection here
+
+Some of these points are looking funny, what if I exclude everything measured pre-2020?
+```{r}
+measure_2020 <- measure %>% 
+  mutate(year=lubridate::year(as.Date(date, format = "%m/%d/%Y"))) %>% 
+  filter(year=="2020")
+
+ggplot(measure_2020, aes(x=basal_log, y=dry_log)) +
+  geom_point() +
+  #geom_point(aes(color=id)) + # plot points colored by ID
+  geom_smooth(method="lm", formula= (y ~ x), color="lightgreen", fill="lightgreen", linetype="dashed") +
+  labs(x="log(Oral Disk Diameter) (mm)", y="log(Wet mass) (g)") +
+  theme_bw() +
+  stat_poly_eq(formula = formula1, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               label.y = 0.95, label.x = 0.025,
+               parse = TRUE)
+```
+
+
+
 
