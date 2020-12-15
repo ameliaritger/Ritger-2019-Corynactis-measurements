@@ -32,21 +32,22 @@ data_no_na <- data %>%
   replace_na(list(dry_mass_plus_vial_g_day_4="9999")) %>%
   replace_na(list(dry_mass_plus_vial_g_day_5="9999")) %>%
   replace_na(list(dry_mass_plus_vial_g_day_6="9999")) %>%
-  replace_na(list(dry_mass_plus_vial_g_day_7="9999"))
+  replace_na(list(dry_mass_plus_vial_g_day_7="9999")) %>%
+  replace_na(list(dry_mass_plus_vial_g_day_8="9999")) %>%
+  replace_na(list(dry_mass_plus_vial_g_day_9="9999")) %>%
+  replace_na(list(dry_mass_plus_vial_g_day_10="9999")) %>%
+  replace_na(list(dry_mass_plus_vial_g_day_11="9999"))
 
 # Take the measurements, do algebra
 measure <- data_no_na %>%
   mutate(oral_disk_mm = (oral_disk_diameter_mm_a + oral_disk_diameter_mm_b)/2) %>%
   mutate(basal_disk_mm = (basal_disk_diameter_mm_a + basal_disk_diameter_mm_b)/2) %>%
   mutate(wet_mass_g = wet_mass_plus_vial_g-vial_mass_g) %>%
-  mutate(min_dry_mass_plus_vial_g = pmin(dry_mass_plus_vial_g_day_2, dry_mass_plus_vial_g_day_3,dry_mass_plus_vial_g_day_4,dry_mass_plus_vial_g_day_5, dry_mass_plus_vial_g_day_6, dry_mass_plus_vial_g_day_7)) %>%
+  mutate(min_dry_mass_plus_vial_g = pmin(dry_mass_plus_vial_g_day_2,dry_mass_plus_vial_g_day_3,dry_mass_plus_vial_g_day_4,dry_mass_plus_vial_g_day_5, dry_mass_plus_vial_g_day_6,dry_mass_plus_vial_g_day_7,dry_mass_plus_vial_g_day_8,dry_mass_plus_vial_g_day_9,dry_mass_plus_vial_g_day_10,dry_mass_plus_vial_g_day_11)) %>%
   mutate(dry_mass_g = as.numeric(min_dry_mass_plus_vial_g)-vial_mass_g) %>%
-  select(number, date, id, oral_disk_mm, basal_disk_mm, mouth_length_mm, vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g) %>% 
+  select(number, date, id, id_confidence, trust_basel, oral_disk_mm, basal_disk_mm, mouth_length_mm, vial_mass_g, min_dry_mass_plus_vial_g, wet_mass_g, dry_mass_g) %>% 
   filter(is.na(dry_mass_g)==FALSE) %>% 
   mutate(dry_mass_g=ifelse(dry_mass_g <= 0, 0.00001, dry_mass_g)) #make negative or zero values (samples 85, 160) very small greater than zero values
-
-measure_dry <- measure %>% 
-  filter(dry_mass_g>0) #remove zero values
 
 ```
 
@@ -94,32 +95,36 @@ That looks better!
 
 # Plot some stuff
 ```{r}
-formula1 <- y ~ x
+#formula1 <- y ~ x
 formula2 <- y ~ poly(x,2)
-formula3 <- y ~ poly(x,3)
+#formula3 <- y ~ poly(x,3)
 
 # oral disk ~ mouth length, dry mass/wet mass ~ oral disk/mouth length
 ggplot(measure, aes(x=basal_disk_mm, y=dry_mass_g)) +
   geom_point() +
+  #geom_text(aes(label=number),hjust=0, vjust=0) +
   #geom_point(aes(color=id)) + # plot points colored by ID
-  geom_smooth(method="lm", formula= (y ~ x), color="lightgreen", fill="lightgreen", linetype="dashed") + 
+  #geom_smooth(method="lm", formula= (y ~ x), color="lightgreen", fill="lightgreen", linetype="dashed") + 
   geom_smooth(method="lm", formula= (y ~ poly(x,2)), color="blue", fill="blue", linetype="dashed") +
-  geom_smooth(method="lm", formula= (y ~ poly(x,3)), color="red", fill="red", linetype="dashed") +
+  #geom_smooth(method="lm", formula= (y ~ poly(x,3)), color="red", fill="red", linetype="dashed") +
   #geom_smooth(method = "lm", se = FALSE, formula = y ~ exp(x))
   labs(x="Oral Disk Diameter (mm)", y="Wet mass (g)") +
   theme_bw() +
-  stat_poly_eq(formula = formula1, 
-                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-               label.y = 0.95, label.x = 0.025,
-               parse = TRUE) +
+  # #stat_poly_eq(formula = formula1, 
+  #               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+  #              label.y = 0.95, label.x = 0.025,
+  #              parse = TRUE) +
   stat_poly_eq(formula = formula2, 
                 aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                label.y = 0.875, label.x = 0.025,
-                parse = TRUE) +
-  stat_poly_eq(formula = formula3, 
-                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-               label.y = 0.8, label.x = 0.025,
+                label.y = 0.95, label.x = 0.025,
                 parse = TRUE)
+  # #stat_poly_eq(formula = formula3, 
+  #               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+  #              label.y = 0.8, label.x = 0.025,
+  #               parse = TRUE)
+
+ggsave(here::here("figures", "basal-dry-bigboys.png"))
+
 ```
 
 ## Plot log-transformed variables just for fun
@@ -128,7 +133,7 @@ ggplot(measure, aes(x=basal_log, y=dry_log)) +
   geom_point() +
   #geom_point(aes(color=id)) + # plot points colored by ID
   geom_smooth(method="lm", formula= (y ~ x), color="lightgreen", fill="lightgreen", linetype="dashed") +
-  labs(x="log(Oral Disk Diameter) (mm)", y="log(Wet mass) (g)") +
+  labs(x="log(Oral Disk Diameter) (mm)", y="log(Dry mass) (g)") +
   theme_bw() +
   stat_poly_eq(formula = formula1, 
                 aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
