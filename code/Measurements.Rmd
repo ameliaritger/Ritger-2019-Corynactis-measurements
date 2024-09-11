@@ -95,21 +95,23 @@ That looks better!
 
 # Plot some stuff
 ```{r}
-#formula1 <- y ~ x
-formula2 <- y ~ poly(x,2)
+formula1 <- y ~ x
+formula2 <- y ~ poly(x,2, raw=TRUE)
 formula3 <- y ~ poly(x,3)
 
 measure_small <- measure %>%
-  filter(basal_disk_mm < 10)
+  filter(basal_disk_mm <= 20)
 
 # oral disk ~ mouth length, dry mass/wet mass ~ oral disk/mouth length
-ggplot(measure_small, aes(x=basal_disk_mm, y=dry_mass_g)) +
+ggplot(measure_small, aes(x=basal_disk_mm, y=wet_mass_g)) +
   geom_point() +
   #geom_text(aes(label=number),hjust=0, vjust=0) +
   #geom_point(aes(color=id)) + # plot points colored by ID
   #geom_smooth(method="lm", formula= (y ~ x), color="lightgreen", fill="lightgreen", linetype="dashed") + 
-  geom_smooth(method="lm", formula= (y ~ poly(x,2)), color="blue", fill="blue", linetype="dashed") +
-  #geom_smooth(method="lm", formula= (y ~ poly(x,3)), color="red", fill="red", linetype="dashed") +
+  geom_smooth(method="lm", formula= (formula2), color="blue", fill="blue", linetype="dashed") +
+  #geom_smooth(method="lm", formula= (formula3), color="red", fill="red", linetype="dashed") +
+  #edit x axis breaks
+  scale_x_continuous(breaks = seq(0, 20, by = 3)) +
   #geom_smooth(method = "lm", se = FALSE, formula = y ~ exp(x))
   labs(x="Basal Disk Diameter (mm)", y="Wet mass (g)") +
   theme_bw() +
@@ -120,13 +122,10 @@ ggplot(measure_small, aes(x=basal_disk_mm, y=dry_mass_g)) +
   stat_poly_eq(formula = formula2, 
                 aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                 label.y = 0.95, label.x = 0.025,
-                parse = TRUE)
-  #stat_poly_eq(formula = formula3, 
-  #              aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
-  #             label.y = 0.8, label.x = 0.025,
-  #              parse = TRUE)
+                parse = TRUE,
+               color="blue")
 
-ggsave(here::here("figures", "basal-ww_10.png"), width=10, height=6, dpi=300)
+#ggsave(here("figures", "basal-ww-raw.png"), width=10, height=6, dpi=300)
 
 ```
 
@@ -177,13 +176,15 @@ AIC(model3)
 
 Hmm... it actually looks like I don't need third degree polynomial? BUT ALSO WHY IS AIC SO LARGE (negative doesn't matter) WHEN A POLYNOMIAL IS USED GAH I don't think AIC is a good indicator for model selection here
 
-Some of these points are looking funny, what if I exclude everything measured pre-2020?
+## Some of these points are looking funny, what if I exclude everything measured pre-2020?
 ```{r}
 measure_2020 <- measure %>% 
   mutate(year=lubridate::year(as.Date(date, format = "%m/%d/%Y"))) %>% 
-  filter(year=="20")
+  filter(year=="20",
+         basal_disk_mm <= 15.1)
+         is.na(trust_basel))
 
-ggplot(measure, aes(x=basal_disk_mm, y=wet_mass_g)) +
+ggplot(measure_2020, aes(x=basal_disk_mm, y=wet_mass_g)) +
   #geom_point(aes(color=id)) + # plot points colored by ID
   geom_smooth(method="lm", 
               formula= formula2,
